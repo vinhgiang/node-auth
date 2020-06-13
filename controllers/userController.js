@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const store = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email }).exec();
@@ -39,8 +40,17 @@ const login = async (req, res, next) => {
 
   try {
     if (await bcrypt.compare(password, user.password)) {
+
+      // convert User Model from Mongoose Document to plain object
+      const safeUser = user.toObject();
+      delete safeUser.password;
+
+      // sign JWT
+      const accessToken = jwt.sign(safeUser, process.env.ACCESS_TOKEN_SECRET);
+
       res.send({
-        message: 'You have successfully logged in.'
+        message: 'You have successfully logged in.',
+        token: accessToken
       });
     } else {
       res.status(400).send(defaultResponse);
@@ -50,7 +60,13 @@ const login = async (req, res, next) => {
   }
 };
 
+const profile = (req, res, next) => {
+  // simply just send user info decoded from JWT from authenticate middleware
+  res.send(req.user);
+}
+
 module.exports = {
   store,
-  login
+  login,
+  profile
 }
