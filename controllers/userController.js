@@ -15,9 +15,10 @@ const store = async (req, res, next) => {
     ...req.body,
     password: hashedPassword
   });
+
   try {
     await newUser.save();
-    return res.send({
+    return res.status(201).send({
       message: 'Your account has been created successfully.',
     });
   } catch (err) {
@@ -25,6 +26,31 @@ const store = async (req, res, next) => {
   }
 };
 
+const login = async (req, res, next) => {
+  const defaultResponse = {
+    error: 'Your email or password is not match.'
+  };
+  const { password, email } = req.body;
+
+  const user = await User.findOne({ email: email }).exec();
+  if (!user) {
+    return res.status(400).send(defaultResponse);
+  }
+
+  try {
+    if (await bcrypt.compare(password, user.password)) {
+      res.send({
+        message: 'You have successfully logged in.'
+      });
+    } else {
+      res.status(400).send(defaultResponse);
+    }
+  } catch(err) {
+    next(err);
+  }
+};
+
 module.exports = {
-  store
+  store,
+  login
 }
