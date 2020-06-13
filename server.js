@@ -2,12 +2,10 @@ require('dotenv').config();
 
 const express = require('express');
 const connection = require('./database');
+const router = require('./routers');
 
 const app = express();
-
-app.get('/', (req, res) => {
-  res.send("<h1>Welcome to Node Auth</h1>");
-});
+app.use('/', router);
 
 const PORT = process.env.PORT || 3000;
 
