@@ -5,6 +5,8 @@ const connection = require('./database');
 const router = require('./routers');
 
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use('/', router);
 
 const PORT = process.env.PORT || 3000;
