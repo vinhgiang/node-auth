@@ -1,3 +1,4 @@
+const config = require('config');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -42,7 +43,8 @@ const login = async (req, res, next) => {
     if (await bcrypt.compare(password, user.password)) {
 
       // sign JWT
-      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+      console.log(config.get("jwt_lifetime"));
+      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.get("jwt_lifetime") });
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET);
 
       user.refresh_token = refreshToken;
@@ -61,6 +63,7 @@ const login = async (req, res, next) => {
   }
 };
 
+// Create new access token based on user refresh token
 const createToken = async (req, res, next) => {
   const refreshToken = req.body.token;
 
@@ -77,7 +80,7 @@ const createToken = async (req, res, next) => {
     if (err) {
       return res.sendStatus(403);
     }
-    const accessToken = jwt.sign({ id: jwt_auth.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+    const accessToken = jwt.sign({ id: jwt_auth.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.get("jwt_lifetime") });
     return res.send({
       'token': accessToken
     })

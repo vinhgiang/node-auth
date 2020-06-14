@@ -1,4 +1,5 @@
 require('dotenv').config();
+const config = require('config');
 
 const express = require('express');
 const connection = require('./database');
@@ -9,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/', router);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || config.get('port');
 
 // Start your app.
 connection.once('open', () => {
