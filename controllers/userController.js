@@ -41,16 +41,17 @@ const login = async (req, res, next) => {
   try {
     if (await bcrypt.compare(password, user.password)) {
 
-      // convert User Model from Mongoose Document to plain object
-      const safeUser = user.toObject();
-      delete safeUser.password;
-
       // sign JWT
-      const accessToken = jwt.sign(safeUser, process.env.ACCESS_TOKEN_SECRET);
+      const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+      const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET);
+
+      user.refresh_token = refreshToken;
+      user.save();
 
       res.send({
         message: 'You have successfully logged in.',
-        token: accessToken
+        token: accessToken,
+        refresh_token: refreshToken
       });
     } else {
       res.status(400).send(defaultResponse);
@@ -60,13 +61,40 @@ const login = async (req, res, next) => {
   }
 };
 
-const profile = (req, res, next) => {
-  // simply just send user info decoded from JWT from authenticate middleware
-  res.send(req.user);
+const createToken = async (req, res, next) => {
+  const refreshToken = req.body.token;
+
+  if (!refreshToken) {
+    return res.sendStatus(401);
+  }
+
+  const isTokenValid = await User.findOne({ refresh_token: refreshToken }).exec();
+  if (!isTokenValid) {
+    return res.sendStatus(403);
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, jwt_auth) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
+    const accessToken = jwt.sign({ id: jwt_auth.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+    return res.send({
+      'token': accessToken
+    })
+  })
+}
+
+const profile = async (req, res, next) => {
+  const userId = req.jwt_auth.id;
+
+  const user = await User.findOne({ _id: userId }).exec();
+
+  res.send(user);
 }
 
 module.exports = {
   store,
   login,
+  createToken,
   profile
 }

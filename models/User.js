@@ -7,12 +7,22 @@ const UserSchema = new Schema({
   last_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  refresh_token: { type: String }
 }, {
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at'
   }
 });
+
+// Hide sensitive and unnecessary fields
+UserSchema.set('toJSON', {
+  transform: function(doc, ret, opt) {
+    delete ret['password'];
+    delete ret['__v'];
+    return ret
+  }
+})
 
 const User = mongoose.model('User', UserSchema);
 

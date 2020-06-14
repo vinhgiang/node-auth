@@ -10,13 +10,13 @@ const authenticate = (req, res, next) => {
   }
 
   // decode JWT
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, jwt_auth) => {
     if (err) {
       return res.sendStatus(403);
     }
 
-    // attach user info decoded from JWT to the request
-    req.user = user;
+    // attach decoded JWT to request
+    req.jwt_auth = jwt_auth;
     next();
   })
 }
