@@ -6,6 +6,14 @@ JWT encoding and decoding.
 This is an API based application, no interface, you will need to use some forms of API calling like Post Man to run through the application.
 You also need to create a MongoDB database for storing user info.
 
+## Dependencies
+1. bcrypt
+1. config
+1. dotenv
+1. express
+1. jsonwebtoken
+1. mongoose
+
 ## APIs
 1. ### Registration
     `POST: http://localhost:3000/users/`
