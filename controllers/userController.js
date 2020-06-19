@@ -43,7 +43,6 @@ const login = async (req, res, next) => {
     if (await bcrypt.compare(password, user.password)) {
 
       // sign JWT
-      console.log(config.get("jwt_lifetime"));
       const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: config.get("jwt_lifetime") });
       const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET);
 
